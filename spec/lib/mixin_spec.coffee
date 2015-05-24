@@ -2,38 +2,40 @@ require("../../lib/mixin")()
 
 describe "Module", ->
 
-  beforeAll ->
-    Mixin1 = class
-      constructors: []
+  describe "three-level deep class inheritance with super", ->
 
-      constructor: ->
-        @constructors.push("Mixin1")
-      
-      test: (p) -> "hello #{p}"
+    beforeAll ->
+    
+      Mixin1 = class
+        constructors: []
 
-    Mixin2 = class
-      @mixin Mixin1
+        constructor: ->
+          @constructors.push("Mixin1")
+        
+        test: (p) -> "hello #{p}"
 
-      constructor: ->
-        super
-        @constructors.push("Mixin2")
+      Mixin2 = class
+        @mixin Mixin1
 
-      test2: (p) -> "hello #{p}"
-      test3:     -> "hello world 3"
+        constructor: ->
+          super
+          @constructors.push("Mixin2")
 
-    @Mixin3 = class
-      @mixin Mixin2
+        test2: (p) -> "hello #{p}"
+        test3:     -> "hello world 3"
 
-      constructor: ->
-        super
-        @constructors.push("Mixin3")
+      @Mixin3 = class
+        @mixin Mixin2
 
-      test: ->  super("world")
-      test2: -> super("world 2")
+        constructor: ->
+          super
+          @constructors.push("Mixin3")
 
-    @test = new @Mixin3()
+        test: ->  super("world")
+        test2: -> super("world 2")
 
-  describe "mixin", ->
+      @test = new @Mixin3()
+
     it "calls contructors", ->
       expect(@test.constructors).toEqual [ "Mixin1", "Mixin2", "Mixin3" ]
 
