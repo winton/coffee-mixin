@@ -16,7 +16,6 @@ module.exports = (klasses..., options={}) ->
   klasses.reduce (current, from, index, array) ->
 
     from.__super__ ||= current::
-    to = array[index-1]
 
     makeArray = (a) ->
       if !a || a instanceof Array then a else [ a ]
@@ -25,9 +24,8 @@ module.exports = (klasses..., options={}) ->
       (klass) =>
         for name, fn of klass
           do (name, fn) =>
-            # stop   = name == "constructor"
-            stop   = typeof klass[name] != "function"
-            stop ||= klass[name].wrapped
+            stop   = name == "constructor"
+            stop ||= typeof klass[name] != "function"
 
             unless stop
               klass[name] = =>
@@ -40,8 +38,6 @@ module.exports = (klasses..., options={}) ->
                   args = current::[name].apply klass, makeArray(args)
 
                 args
-
-              klass[name].wrapped = true
     )(from::)
 
     class
