@@ -1,28 +1,72 @@
 # coffee-mixin
 
-    require("coffee-mixin")()
+    mix = require("coffee-mixin")
 
     class A
       constructor: -> console.log "hello"
       world: ->       console.log "world"
 
     class B
-      @mixin A
 
       constructor: -> super()
       world:       -> super()
 
-    new B().world()
+    C = mix A, B
 
-    # Outputs:
-    #   hello
-    #   world
+    new C().world()
+      #
+      # hello
+      # world
 
 ## Options
 
-Available options with default values:
+We can also automatically wrap all functions to call super before or
+after the function is executed.
 
     @mixin [Class],
-      append_super:  false, # monkeypatch all functions with super (append)
-      prepend_super: false, # monkeypatch all functions with super (prepend)
-      change_super:  true   # modify existing super
+      append:  false, # append  all functions with super
+      prepend: false, # prepend all functions with super
+
+## Append Example
+
+    mix = require("coffee-mixin")
+
+    class A
+      constructor: (str) -> console.log "#{str}lo"
+      world:       (str) -> console.log "#{str}ld"
+
+    class B
+
+      # CoffeeScript does not `return` by default in constructors.
+      #
+      constructor: -> return "hel"
+      world:       -> "wor"
+
+    C = mix A, B, append: true
+
+    new C().world()
+      #
+      # hello
+      # world
+
+## Prepend Example
+
+    mix = require("coffee-mixin")
+
+    class A
+
+      # CoffeeScript does not `return` by default in constructors.
+      #
+      constructor: -> return "hel"
+      world:       -> "wor"
+
+    class B
+      constructor: (str) -> console.log "#{str}lo"
+      world:       (str) -> console.log "#{str}ld"
+
+    C = mix A, B, prepend: true
+
+    new C().world()
+      #
+      # hello
+      # world
