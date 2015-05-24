@@ -23,6 +23,6 @@
 Available options with default values:
 
     @mixin [Class],
-      appendSuper:  false, # monkeypatch all functions with super (append)
-      prependSuper: false, # monkeypatch all functions with super (prepend)
-      changeSuper:  true   # modify existing super
+      append_super:  false, # monkeypatch all functions with super (append)
+      prepend_super: false, # monkeypatch all functions with super (prepend)
+      change_super:  true   # modify existing super
