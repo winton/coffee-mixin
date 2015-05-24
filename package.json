@@ -1,0 +1,23 @@
+{
+  "name": "coffee-mixin",
+  "version": "0.0.1",
+  "description": "Mixins for coffeescript classes",
+  "main": "./lib/mixin.coffee",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/winton/coffee-mixin.git"
+  },
+  "author": "Winton Welsh <winton@cyclo.ps>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/winton/coffee-mixin/issues"
+  },
+  "homepage": "https://github.com/winton/coffee-mixin",
+  "devDependencies": {
+    "coffee-script": "",
+    "jasmine": ""
+  }
+}
