@@ -13,46 +13,50 @@ merge = (to, from) ->
 
 module.exports = (klasses..., options={}) ->
   klasses.push(options) unless typeof options == "object"
-  klasses.reduce (to, from, index, array) ->
+  klasses.reduce (current, from, index, array) ->
     
-    from.__super__ ||= to::
-    real_to = array[index-1]::
+    to = array[index-1]
+    from.__super__ ||= current::
+
+    makeArray = (a) ->
+      if !a || a instanceof Array then a else [ a ]
+
+    (
+      (klass) =>
+        for name, fn of klass
+          do (name, fn) =>
+            stop   = name == "constructor"
+            stop ||= typeof klass[name] != "function"
+            stop ||= klass[name].wrapped
+
+            unless stop
+              klass[name] = =>
+                if options.prepend && current::[name]
+                  args = current::[name].apply klass, arguments
+
+                args = fn.apply klass, makeArray(args) || arguments
+
+                if options.append && current::[name]
+                  args = current::[name].apply klass, makeArray(args) || arguments
+
+                args
+
+              klass[name].wrapped = true
+    )(from::)
 
     class
       @include from
       @extend  from
 
-      @include to
-      @extend  to
+      @include current
+      @extend  current
 
       constructor: ->
-        makeArray = (a) ->
-          if !a || a instanceof Array then a else [ a ]
-
-        wrapFunctions = =>
-          for name, fn of @
-            stop   = name == "constructor"
-            stop ||= typeof @[name] != "function"
-
-            unless stop
-              do (name, fn) =>
-                @[name] = =>
-                  if options.prepend && real_to[name]
-                    args = real_to[name].apply @, arguments
-
-                  args = fn.apply @, makeArray(args) || arguments
-
-                  if options.append && real_to[name]
-                    args = real_to[name].apply @, makeArray(args) || arguments
-
-                  args
-
-        wrapFunctions()
 
         if options.prepend
-          args = from.__super__.constructor.apply @, arguments
+          args = current::.constructor.apply @, arguments
 
         args = from.apply @, args || arguments
 
         if options.append
-          from.__super__.constructor.apply @, args
+          current::.constructor.apply @, args
