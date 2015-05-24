@@ -20,6 +20,8 @@ Powerful mixins and monkeypatches for coffeescript.
       # hello
       # world
 
+The `mix` function takes any number of classes as parameters.
+
 ## Wrap Super (Monkeypatch)
 
 Automatically call super before or after each function is executed.
