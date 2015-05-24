@@ -14,9 +14,9 @@ merge = (to, from) ->
 module.exports = (klasses..., options={}) ->
   klasses.push(options) unless typeof options == "object"
   klasses.reduce (current, from, index, array) ->
-    
-    to = array[index-1]
+
     from.__super__ ||= current::
+    to = array[index-1]
 
     makeArray = (a) ->
       if !a || a instanceof Array then a else [ a ]
@@ -25,8 +25,8 @@ module.exports = (klasses..., options={}) ->
       (klass) =>
         for name, fn of klass
           do (name, fn) =>
-            stop   = name == "constructor"
-            stop ||= typeof klass[name] != "function"
+            # stop   = name == "constructor"
+            stop   = typeof klass[name] != "function"
             stop ||= klass[name].wrapped
 
             unless stop
@@ -37,7 +37,7 @@ module.exports = (klasses..., options={}) ->
                 args = fn.apply klass, makeArray(args) || arguments
 
                 if options.append && current::[name]
-                  args = current::[name].apply klass, makeArray(args) || arguments
+                  args = current::[name].apply klass, makeArray(args)
 
                 args
 
@@ -52,11 +52,12 @@ module.exports = (klasses..., options={}) ->
       @extend  current
 
       constructor: ->
-
         if options.prepend
           args = current::.constructor.apply @, arguments
 
-        args = from.apply @, args || arguments
+        args = from.apply @, makeArray(args) || arguments
 
         if options.append
-          current::.constructor.apply @, args
+          args = current::.constructor.apply @, makeArray(args)
+
+        return args

@@ -10,7 +10,8 @@ describe "Module", ->
         constructors: []
 
         constructor: -> @constructors.push("Mixin1")
-        test:     (p) -> "hello #{p}"
+        test:    (p) -> "hello #{p}"
+        test4:   (p) -> "a #{p}"
 
       class Mixin2
 
@@ -20,6 +21,7 @@ describe "Module", ->
 
         test2: (p) -> "hello #{p}"
         test3:     -> "hello world 3"
+        test4: (p) -> super "b #{p}"
 
       class Mixin3
 
@@ -27,9 +29,9 @@ describe "Module", ->
           super
           @constructors.push("Mixin3")
 
-        test:  ->
-          super("world")
+        test:  -> super("world")
         test2: -> super("world 2")
+        test4: -> super("c")
 
       Test  = mix Mixin1, Mixin2, Mixin3
       @test = new Test()
@@ -45,6 +47,9 @@ describe "Module", ->
 
     it "returns correct value without super", ->
       expect(@test.test3()).toBe "hello world 3"
+
+    it "returns correct value on all mixins", ->
+      expect(@test.test4()).toBe "a b c"
 
   describe "three-level deep class inheritance with appended super", ->
 
@@ -132,3 +137,48 @@ describe "Module", ->
 
     it "returns correct value without super", ->
       expect(@test.test3()).toBe "hello world 3"
+
+  describe "constructor returns appended super values", ->
+
+    beforeAll ->
+    
+      class Mixin1
+        constructor: (ab) ->
+          @result = "#{ab} c"
+        
+      class Mixin2
+
+        constructor: (a) ->
+          return "#{a} b"
+
+      class Mixin3
+
+        constructor: ->
+          return "a"
+
+      Test  = mix Mixin1, Mixin2, Mixin3, append: true
+      @test = new Test()
+
+    it "calls contructors", ->
+      expect(@test.result).toBe "a b c"
+
+  describe "constructor returns prepended super values", ->
+
+    beforeAll ->
+    
+      class Mixin1
+        constructor: -> return "a"
+        
+      class Mixin2
+
+        constructor: (a) -> return "#{a} b"
+
+      class Mixin3
+
+        constructor: (ab) -> @result = "#{ab} c"
+
+      Test  = mix Mixin1, Mixin2, Mixin3, prepend: true
+      @test = new Test()
+
+    it "calls contructors", ->
+      expect(@test.result).toBe "a b c"
