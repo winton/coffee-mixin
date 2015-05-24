@@ -1,11 +1,15 @@
 module.exports = (klasses..., options={}) ->
   unless typeof options == "object"
     klasses.push(options)
+    options = {}
   
   klasses.reduce (current, from, index, array) ->
     from.__super__ ||= current::
 
-    wrapFunctions current::, from::, options
+    wrapFunctions merge
+      to: current::
+      from: from::
+      options
 
     class
       @include from
@@ -15,9 +19,12 @@ module.exports = (klasses..., options={}) ->
       @extend  current
 
       constructor: ->
-        return wrapFunction(
-          from, arguments, current::.constructor, @, options
-        )
+        return wrapFunction merge
+          bind:    @
+          fn:      from
+          fnSuper: current::.constructor
+          args:    arguments
+          options
 
 makeArray = (a) ->
   if !a || a instanceof Array then a else [ a ]
@@ -29,7 +36,9 @@ merge = (to, from) ->
   
   to
 
-wrapFunctions = (to, from, options={}) =>
+wrapFunctions = (options={}) =>
+  { to, from } = options
+
   for name, fn of from
     do (name, fn) ->
       stop   = name == "constructor"
@@ -37,18 +46,25 @@ wrapFunctions = (to, from, options={}) =>
 
       unless stop
         from[name] = ->
-          wrapFunction fn, arguments, to[name], from, options
+          wrapFunction merge
+            bind:    from
+            fn:      fn
+            fnSuper: to[name]
+            args:    arguments
+            options
 
-wrapFunction = (fn, fnArgs, fnSuper, bind, options={}) ->
-  if options.prepend && fnSuper
-    args = fnSuper.apply bind, fnArgs
+wrapFunction = (options={}) ->
+  { fn, args, fnSuper, bind, prepend, append } = options
 
-  args = fn.apply bind, makeArray(args) || fnArgs
+  if prepend && fnSuper
+    result = fnSuper.apply bind, args
 
-  if options.append && fnSuper
-    args = fnSuper.apply bind, makeArray(args)
+  result = fn.apply bind, makeArray(result) || args
 
-  args
+  if append && fnSuper
+    result = fnSuper.apply bind, makeArray(result)
+
+  result
 
 # Function extensions.
 #
