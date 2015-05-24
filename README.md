@@ -18,16 +18,12 @@
       # hello
       # world
 
-## Options
+## Auto-call Super
 
 We can also automatically wrap all functions to call super before or
-after the function is executed.
+after each function is executed.
 
-    @mixin [Class],
-      append:  false, # append  all functions with super
-      prepend: false, # prepend all functions with super
-
-## Append Example
+### Append Example
 
     mix = require("coffee-mixin")
 
@@ -49,7 +45,7 @@ after the function is executed.
       # hello
       # world
 
-## Prepend Example
+### Prepend Example
 
     mix = require("coffee-mixin")
 
