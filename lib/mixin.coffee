@@ -1,44 +1,11 @@
-Function::extend = (from) ->
-  merge @, from
-
-Function::include = (from) ->
-  merge @::, from::
-
-merge = (to, from) ->
-  for key, value of from
-    unless to[key] || key == "__super__"
-      to[key] = value
-  
-  to
-
 module.exports = (klasses..., options={}) ->
-  klasses.push(options) unless typeof options == "object"
+  unless typeof options == "object"
+    klasses.push(options)
+  
   klasses.reduce (current, from, index, array) ->
-
     from.__super__ ||= current::
 
-    makeArray = (a) ->
-      if !a || a instanceof Array then a else [ a ]
-
-    (
-      (klass) =>
-        for name, fn of klass
-          do (name, fn) =>
-            stop   = name == "constructor"
-            stop ||= typeof klass[name] != "function"
-
-            unless stop
-              klass[name] = =>
-                if options.prepend && current::[name]
-                  args = current::[name].apply klass, arguments
-
-                args = fn.apply klass, makeArray(args) || arguments
-
-                if options.append && current::[name]
-                  args = current::[name].apply klass, makeArray(args)
-
-                args
-    )(from::)
+    wrapFunctions current::, from::, options
 
     class
       @include from
@@ -48,12 +15,46 @@ module.exports = (klasses..., options={}) ->
       @extend  current
 
       constructor: ->
-        if options.prepend
-          args = current::.constructor.apply @, arguments
+        return wrapFunction(
+          from, arguments, current::.constructor, @, options
+        )
 
-        args = from.apply @, makeArray(args) || arguments
+makeArray = (a) ->
+  if !a || a instanceof Array then a else [ a ]
 
-        if options.append
-          args = current::.constructor.apply @, makeArray(args)
+merge = (to, from) ->
+  for key, value of from
+    unless to[key] || key == "__super__"
+      to[key] = value
+  
+  to
 
-        return args
+wrapFunctions = (to, from, options={}) =>
+  for name, fn of from
+    do (name, fn) ->
+      stop   = name == "constructor"
+      stop ||= typeof from[name] != "function"
+
+      unless stop
+        from[name] = ->
+          wrapFunction fn, arguments, to[name], from, options
+
+wrapFunction = (fn, fnArgs, fnSuper, bind, options={}) ->
+  if options.prepend && fnSuper
+    args = fnSuper.apply bind, fnArgs
+
+  args = fn.apply bind, makeArray(args) || fnArgs
+
+  if options.append && fnSuper
+    args = fnSuper.apply bind, makeArray(args)
+
+  args
+
+# Function extensions.
+#
+
+Function::extend = (from) ->
+  merge @, from
+
+Function::include = (from) ->
+  merge @::, from::
