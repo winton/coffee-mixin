@@ -194,3 +194,37 @@ describe "Module", ->
 
     it "calls contructors", ->
       expect(@test.result).toBe "a b c"
+
+  describe "scope", ->
+
+    beforeAll ->
+      results = []
+
+      class Mixin1
+        mixin1: true
+        constructor: ->
+          results.push @mixin1
+          results.push @mixin2
+        test: ->
+          results.push @mixin1
+          results.push @mixin2
+
+      class Mixin2
+        mixin2: true
+        constructor: ->
+          results.push @mixin1
+          results.push @mixin2
+          super
+        test2: ->
+          results.push @mixin1
+          results.push @mixin2
+
+      Test  = mix Mixin1, Mixin2
+
+      new Test().test()
+      new Test().test2()
+
+      @results = results
+
+    it "sets scope properly", ->
+      expect(@results.indexOf(false)).toBe -1

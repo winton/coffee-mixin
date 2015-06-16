@@ -2,6 +2,9 @@ module.exports = (klasses..., options={}) ->
   unless typeof options == "object"
     klasses.push(options)
     options = {}
+
+  root = class
+  klasses.unshift root
   
   klasses.reduce (current, from, index, array) ->
     from.__super__ ||= current::
@@ -47,7 +50,7 @@ wrapFunctions = (options={}) =>
       unless stop
         from[name] = ->
           wrapFunction merge
-            bind:    from
+            bind:    @
             fn:      fn
             fnSuper: to[name]
             args:    arguments
