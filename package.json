@@ -1,6 +1,6 @@
 {
   "name": "coffee-mixin",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Mixins for coffeescript classes",
   "main": "lib/mixin.coffee",
   "scripts": {
